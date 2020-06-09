@@ -1,6 +1,6 @@
 Package.describe({
   name: 'quave:resolvers',
-  version: '1.0.0',
+  version: '1.0.1',
   summary: 'Utility package to create Resolvers',
   git: 'https://github.com/quavedev/resolvers',
 });

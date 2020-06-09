@@ -17,21 +17,24 @@ export const resolvable = collection =>
     },
   });
 
-export const createResolvers = ({ definition, collection }) => ({
-  Query: {
-    async [definition.graphQLOneQueryCamelCaseName](root, { _id }) {
-      return collection.findOne(_id);
+export const createResolvers = ({ collection, definition: definitionParam }) => {
+  const definition = definitionParam || collection.definition;
+  return ({
+    Query: {
+      async [definition.graphQLOneQueryCamelCaseName](root, {_id}) {
+        return collection.findOne(_id);
+      },
+      async [definition.graphQLManyQueryCamelCaseName]() {
+        return collection.find().fetch();
+      },
     },
-    async [definition.graphQLManyQueryCamelCaseName]() {
-      return collection.find().fetch();
+    Mutation: {
+      async [definition.graphQLSaveMutationCamelCaseName](root, {player}) {
+        return collection.save(player);
+      },
+      async [definition.graphQLEraseMutationCamelCaseName](root, {_id}) {
+        return collection.erase(_id);
+      },
     },
-  },
-  Mutation: {
-    async [definition.graphQLSaveMutationCamelCaseName](root, { player }) {
-      return collection.save(player);
-    },
-    async [definition.graphQLEraseMutationCamelCaseName](root, { _id }) {
-      return collection.erase(_id);
-    },
-  },
-});
+  });
+};
