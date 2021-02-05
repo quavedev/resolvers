@@ -17,11 +17,14 @@ export const resolvable = collection =>
     },
   });
 
-export const createResolvers = ({ collection, definition: definitionParam }) => {
+export const createResolvers = ({
+  collection,
+  definition: definitionParam,
+}) => {
   const definition = definitionParam || collection.definition;
-  return ({
+  return {
     Query: {
-      async [definition.graphQLOneQueryCamelCaseName](root, {_id}) {
+      async [definition.graphQLOneQueryCamelCaseName](root, { _id }) {
         return collection.findOne(_id);
       },
       async [definition.graphQLManyQueryCamelCaseName]() {
@@ -29,12 +32,12 @@ export const createResolvers = ({ collection, definition: definitionParam }) => 
       },
     },
     Mutation: {
-      async [definition.graphQLSaveMutationCamelCaseName](root, {player}) {
-        return collection.save(player);
+      async [definition.graphQLSaveMutationCamelCaseName](root, arg) {
+        return collection.save(arg[definition.nameCamelCase]);
       },
-      async [definition.graphQLEraseMutationCamelCaseName](root, {_id}) {
+      async [definition.graphQLEraseMutationCamelCaseName](root, { _id }) {
         return collection.erase(_id);
       },
     },
-  });
+  };
 };
