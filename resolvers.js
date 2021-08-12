@@ -1,3 +1,5 @@
+export const LIMIT = 7;
+
 export const resolvable = collection =>
   Object.assign({}, collection, {
     save(input) {
@@ -17,6 +19,40 @@ export const resolvable = collection =>
     },
   });
 
+export const paginatable = collection =>
+  Object.assign({}, collection, {
+    findPaginated({ selector = {}, options = {}, paginationAction }) {
+      const { skip, limit } = paginationAction || { skip: 0, limit: LIMIT };
+      const items = this.find(selector, {
+        ...options,
+        skip,
+        limit,
+      }).fetch();
+      const total = this.find(selector).count();
+      const nextSkip = skip + limit;
+      const previousSkip = skip - limit;
+
+      const totalPages =
+        parseInt(total / limit, 10) + (total % limit > 0 ? 1 : 0);
+      const currentPage =
+        parseInt(skip / limit, 10) + (skip % limit > 0 ? 1 : 0) + 1;
+      return {
+        items,
+        pagination: {
+          total,
+          totalPages,
+          currentPage: totalPages ? currentPage : 0,
+          first: { skip: 0, limit },
+          last: { skip: (totalPages - 1) * limit, limit },
+          ...(nextSkip < total ? { next: { skip: nextSkip, limit } } : {}),
+          ...(previousSkip >= 0
+            ? { previous: { skip: previousSkip, limit } }
+            : {}),
+        },
+      };
+    },
+  });
+
 export const createResolvers = ({
   collection,
   definition: definitionParam,
@@ -29,6 +65,12 @@ export const createResolvers = ({
       },
       async [definition.graphQLManyQueryCamelCaseName]() {
         return collection.find().fetch();
+      },
+      async [definition.graphQLPaginatedQueryCamelCaseName](
+        root,
+        { paginationAction }
+      ) {
+        return collection.findPaginated({ paginationAction });
       },
     },
     Mutation: {
