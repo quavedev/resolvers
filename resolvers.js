@@ -1,4 +1,6 @@
-export const LIMIT = 7;
+export const LIMIT = 10;
+
+export const crudable = collection => paginable(resolvable(collection));
 
 export const resolvable = collection =>
   Object.assign({}, collection, {
@@ -19,10 +21,10 @@ export const resolvable = collection =>
     },
   });
 
-export const paginatable = collection =>
+export const paginable = collection =>
   Object.assign({}, collection, {
     findPaginated({ selector = {}, options = {}, paginationAction }) {
-      const { skip, limit } = paginationAction || { skip: 0, limit: LIMIT };
+      const { skip = 0, limit = LIMIT } = paginationAction || {};
       const items = this.find(selector, {
         ...options,
         skip,
@@ -36,6 +38,7 @@ export const paginatable = collection =>
         parseInt(total / limit, 10) + (total % limit > 0 ? 1 : 0);
       const currentPage =
         parseInt(skip / limit, 10) + (skip % limit > 0 ? 1 : 0) + 1;
+
       return {
         items,
         pagination: {
